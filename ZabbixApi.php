@@ -6,14 +6,17 @@ class HttpConnectionException extends \RuntimeException implements ZabbixExcepti
 class ZabbixApiExeption extends \RuntimeException implements ZabbixException { }
 
 class ZabbixApi {
-	private $host ='';
-	private $id = '';
+	private $host =null;
+	private $id = null;
 	private $token = null;
+	private $api_prot = null;
+	private $api_path = null;
 
-	public function __construct($host, $user, $pass) {
-		$this->host = (string)filter_var($host);
+	public function __construct($host, $api_prot = 'http', $api_path = '/zabbix/api_jsonrpc.php') {
+		$this->host = (string)$host;
 		$this->id = date('YmdHis');
-		$this->login($user, $pass);
+		$this->api_prot = $api_prot;
+		$this->api_path = $api_path;
 	}
 
 	public function isConnected() {
@@ -24,7 +27,7 @@ class ZabbixApi {
 		}
 	}
 
-	private function login($user, $pass) {
+	public function login($user, $pass) {
 		$params = array(
 			'user'      => $user,
 			'password'  => $pass
@@ -44,7 +47,7 @@ class ZabbixApi {
 
 		$request_json = json_encode($request);
 
-		$url = 'http://' . $this->host . '/zabbix/api_jsonrpc.php';
+		$url = $this->api_prot . '://' . $this->host . $this->api_path;
 		$ch = curl_init($url);
 		curl_setopt_array($ch, [
 			CURLOPT_HTTPHEADER => array('Content-Type: application/json-rpc'),
